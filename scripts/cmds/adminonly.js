@@ -1,4 +1,5 @@
 const fs = require("fs-extra");
+const moment = require("moment-timezone");
 const { config } = global.GoatBot;
 const { client } = global;
 
@@ -6,39 +7,31 @@ module.exports = {
 	config: {
 		name: "adminonly",
 		aliases: ["adonly", "onlyad", "onlyadmin"],
-		version: "1.5",
-		author: "NTKhang",
+		version: "1.7",
+		author: "Camille 🤍",
 		countDown: 5,
 		role: 2,
 		description: {
-			vi: "bật/tắt chế độ chỉ admin mới có thể sử dụng bot",
-			en: "turn on/off only admin can use bot"
+			en: "Activer/désactiver le mode restreint aux admins (Style Uchiha)"
 		},
 		category: "owner",
 		guide: {
-			vi: "   {pn} [on | off]: bật/tắt chế độ chỉ admin mới có thể sử dụng bot"
-				+ "\n   {pn} noti [on | off]: bật/tắt thông báo khi người dùng không phải là admin sử dụng bot",
-			en: "   {pn} [on | off]: turn on/off the mode only admin can use bot"
-				+ "\n   {pn} noti [on | off]: turn on/off the notification when user is not admin use bot"
+			en: "   {pn} [on | off] : active/désactive le mode admin uniquement"
+				+ "\n   {pn} noti [on | off] : active/désactive les alertes pour les non-admins"
 		}
 	},
 
 	langs: {
-		vi: {
-			turnedOn: "Đã bật chế độ chỉ admin mới có thể sử dụng bot",
-			turnedOff: "Đã tắt chế độ chỉ admin mới có thể sử dụng bot",
-			turnedOnNoti: "Đã bật thông báo khi người dùng không phải là admin sử dụng bot",
-			turnedOffNoti: "Đã tắt thông báo khi người dùng không phải là admin sử dụng bot"
-		},
 		en: {
-			turnedOn: "Turned on the mode only admin can use bot",
-			turnedOff: "Turned off the mode only admin can use bot",
-			turnedOnNoti: "Turned on the notification when user is not admin use bot",
-			turnedOffNoti: "Turned off the notification when user is not admin use bot"
+			turnedOn: "╔═══════ 🍎 ═══════╗\n   ⚡ **MODE RESTREINT** ⚡\n╚═══════ 🍎 ═══════╝\n✅ Le Sharingan est activé : Seuls les admins peuvent utiliser le Bot.\n⏰ Heure : %1",
+			turnedOff: "╔═══════ 🍎 ═══════╗\n   🌀 **MODE PUBLIC** 🌀\n╚═══════ 🍎 ═══════╝\n✅ Le mode restreint est désactivé. Tout le monde peut utiliser le Bot.\n⏰ Heure : %1",
+			turnedOnNoti: "🔔 | Alertes activées : Le Bot signalera les tentatives d'utilisation non autorisées.",
+			turnedOffNoti: "🔕 | Alertes désactivées : Le Bot restera silencieux face aux non-admins."
 		}
 	},
 
 	onStart: function ({ args, message, getLang }) {
+		const time = moment.tz("Africa/Abidjan").format("HH:mm");
 		let isSetNoti = false;
 		let value;
 		let indexGetVal = 0;
@@ -53,7 +46,7 @@ module.exports = {
 		else if (args[indexGetVal] == "off")
 			value = false;
 		else
-			return message.SyntaxError();
+			return message.reply("⚠️ | Utilise : .adminonly [on | off] ou .adminonly noti [on | off]");
 
 		if (isSetNoti) {
 			config.hideNotiMessage.adminOnly = !value;
@@ -61,9 +54,10 @@ module.exports = {
 		}
 		else {
 			config.adminOnly.enable = value;
-			message.reply(getLang(value ? "turnedOn" : "turnedOff"));
+			message.reply(getLang(value ? "turnedOn" : "turnedOff", time));
 		}
 
+		// Sauvegarde automatique dans le fichier config.json
 		fs.writeFileSync(client.dirConfig, JSON.stringify(config, null, 2));
 	}
 };
